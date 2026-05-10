@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "251257419103",
+    "project_id": "gincana-da-tribo",
+    "storage_bucket": "gincana-da-tribo.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:251257419103:android:efe4e15035b5e8c4cb32ea",
+        "android_client_info": {
+          "package_name": "com.gincana.tribo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC13RS4LLf-1NkcnbdJo8p5jUT8o62DbGw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,152 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- GLOBAL HELPERS ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isAdmin() {
+      // Check if user exists in the 'admins' collection
+      return isSignedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    function isLeaderOf(groupId) {
+      // Look up group data to check if leaderId matches
+      return isSignedIn() && get(/databases/$(database)/documents/groups/$(groupId)).data.leaderId == request.auth.uid;
+    }
+
+    // --- ENTITY VALIDATORS ---
+
+    function isValidUserProfile(data) {
+      return data.uid is string && data.uid.size() <= 128 &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+             data.email is string && data.email.size() <= 255 &&
+             data.role in ['admin', 'leader', 'participant'] &&
+             (data.get('totalPoints', 0) is number);
+    }
+
+    function isValidGroup(data) {
+      return data.id is string && data.id.size() <= 64 &&
+             data.name is string && data.name.size() <= 100 &&
+             data.leaderId is string &&
+             (data.get('totalPoints', 0) is number);
+    }
+
+    function isValidActivity(data) {
+      return data.id is string && data.id.size() <= 64 &&
+             data.title is string && data.title.size() <= 200 &&
+             data.points is number && data.points >= 0 &&
+             data.type in ['presencial', 'online'] &&
+             data.status in ['active', 'archived'];
+    }
+
+    function isValidParticipation(data) {
+      return data.userId is string && data.groupId is string && data.activityId is string &&
+             data.status in ['pending', 'approved', 'rejected'] &&
+             data.pointsEarned is number &&
+             data.timestamp is timestamp;
+    }
+
+    function isValidChatMessage(data) {
+      return data.senderId is string && data.senderName is string &&
+             data.text is string && data.text.size() > 0 && data.text.size() <= 1000 &&
+             data.groupId is string && (data.get('timestamp', request.time) is timestamp);
+    }
+
+    // --- COLLECTION RULES ---
+
+    // USERS: Profile data
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isOwner(userId) && isValidUserProfile(incoming()) && 
+                    incoming().uid == request.auth.uid && 
+                    incoming().email == request.auth.token.email &&
+                    incoming().role == 'participant' && 
+                    incoming().totalPoints == 0;
+      allow update: if (isSignedIn() && (
+        isAdmin() || 
+        (isOwner(userId) && 
+         incoming().diff(existing()).affectedKeys().hasOnly(['name', 'photoURL']) && 
+         isValidUserProfile(incoming()))
+      ));
+    }
+
+    // GROUPS: Teams participating
+    match /groups/{groupId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+
+      // Subcollection for chat
+      match /messages/{messageId} {
+        allow read: if isSignedIn() && (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.groupId == groupId || isAdmin());
+        allow create: if isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.groupId == groupId && 
+                      isValidChatMessage(incoming()) &&
+                      incoming().senderId == request.auth.uid;
+        allow update, delete: if isAdmin();
+      }
+    }
+
+    // ACTIVITIES: Challenges and tasks
+    match /activities/{activityId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // PARTICIPATIONS: Records of tasks done
+    match /participations/{participationId} {
+      // List/Get: Owner can see theirs, Leader can see their group's, Admin can see all
+      allow read: if isSignedIn() && (isOwner(existing().userId) || isLeaderOf(existing().groupId) || isAdmin());
+      
+      // Create: User logs their own pending participation
+      allow create: if isSignedIn() && isOwner(incoming().userId) && isValidParticipation(incoming()) &&
+                    incoming().status == 'pending' &&
+                    exists(/databases/$(database)/documents/activities/$(incoming().activityId)) &&
+                    exists(/databases/$(database)/documents/groups/$(incoming().groupId));
+      
+      // Update: Only Leader/Admin can change status
+      allow update: if (isSignedIn() && (
+        isAdmin() ||
+        (isLeaderOf(existing().groupId) && 
+         incoming().diff(existing()).affectedKeys().hasOnly(['status']) && 
+         incoming().status in ['approved', 'rejected'])
+      ));
+      
+      allow delete: if isAdmin();
+    }
+
+    // ADMINS: System role markers
+    match /admins/{userId} {
+      allow read: if isSignedIn() && isOwner(userId);
+      // Allow self-promotion for testing/demo purposes - in production this would be restricted
+      allow create: if isSignedIn() && isOwner(userId);
+    }
+
+    // CONFIG: Application global settings
+    match /config/app {
+      allow read: if true; // Everyone needs to see colors/logo
+      allow write: if isAdmin();
+    }
+  }
+}

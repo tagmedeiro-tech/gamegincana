@@ -1,0 +1,149 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #FBBF24;
+  --color-primary-dark: #B45309;
+  --color-accent: #FFFFFF;
+  --color-bg-dark: #000000;
+  --color-bg-card: #121212;
+  --color-text-main: #FFFFFF;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --breakpoint-xs: 400px;
+}
+
+@layer base {
+  body {
+    @apply bg-black text-white font-sans antialiased;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary text-black font-black uppercase tracking-tighter py-3 px-8 rounded-full transition-colors duration-300 hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(251,191,36,0.3)];
+  }
+  
+  .btn-secondary {
+    @apply bg-zinc-800 text-white font-black uppercase tracking-tighter py-3 px-8 rounded-full transition-colors duration-300 hover:bg-zinc-700 active:scale-95;
+  }
+
+  .card-bold {
+    @apply bg-zinc-900 border-4 border-primary shadow-[8px_8px_0px_0px_rgba(251,191,36,1)] rounded-3xl p-6 transition-colors duration-300;
+  }
+
+  .card-yellow {
+    @apply bg-primary text-black rounded-3xl p-6 relative overflow-hidden flex flex-col justify-between;
+  }
+
+  .card-premium {
+    @apply bg-zinc-900/40 backdrop-blur-xl border border-zinc-800 rounded-[2.5rem] p-8 relative overflow-hidden transition-colors duration-300 hover:border-zinc-700 shadow-2xl;
+  }
+
+  .badge-premium {
+    @apply px-4 py-1.5 bg-black/40 border border-zinc-800 rounded-full text-[10px] font-black text-zinc-400 uppercase italic tracking-widest shadow-inner transition-colors duration-300 hover:border-primary/30 hover:text-white;
+  }
+
+  .sidebar-link {
+    @apply flex items-center gap-3 font-black italic tracking-tighter uppercase transition-all py-2;
+  }
+
+  /* Efeito de Rolagem com Fading Edges */
+  .scroll-faded-container {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .scroll-faded-container::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 2rem;
+    background: linear-gradient(to right, black, transparent);
+    z-index: 10;
+    pointer-events: none;
+    opacity: 0.8;
+  }
+
+  .scroll-faded-container::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 3rem;
+    background: linear-gradient(to left, black, rgba(0,0,0,0.8), transparent);
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  /* Scrollbar Fina e Elegante */
+  .modern-scrollbar::-webkit-scrollbar {
+    height: 4px;
+    width: 4px;
+  }
+  .modern-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .modern-scrollbar::-webkit-scrollbar-thumb {
+    background: #3f3f46; /* zinc-700 */
+    border-radius: 10px;
+  }
+  .modern-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #52525b; /* zinc-600 */
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-shimmer {
+  animation: shimmer 1.5s infinite linear;
+}
+
+.animate-sweep {
+  animation: sweep 3s infinite;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #000000;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #FBBF24;
+  border-radius: 0px;
+  border: 2px solid #000000;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #B45309;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.text-glow-primary {
+  text-shadow: 0 0 20px rgba(251, 191, 36, 0.4);
+}
+
+.shadow-glow-primary {
+  box-shadow: 0 0 40px rgba(251, 191, 36, 0.2);
+}

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Gincana da Tribo</string>
+    <string name="title_activity_main">Gincana da Tribo</string>
+    <string name="package_name">com.gincana.tribo</string>
+    <string name="custom_url_scheme">com.gincana.tribo</string>
+</resources>

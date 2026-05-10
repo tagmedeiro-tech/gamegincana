@@ -1,0 +1,131 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Public profile data for participants and admins",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "role": { "type": "string", "enum": ["admin", "leader", "participant"] },
+        "groupId": { "type": "string" },
+        "totalPoints": { "type": "number" },
+        "photoURL": { "type": "string" },
+        "achievements": {
+          "type": "array",
+          "items": { "$ref": "#/entities/Achievement" }
+        }
+      },
+      "required": ["uid", "name", "email", "role"]
+    },
+    "Achievement": {
+      "title": "Achievement",
+      "description": "Awards earned by users",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "icon": { "type": "string" },
+        "unlockedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "title"]
+    },
+    "Group": {
+      "title": "Group",
+      "description": "A youth group or team in the gincana",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "leaderId": { "type": "string" },
+        "color": { "type": "string" },
+        "totalPoints": { "type": "number" },
+        "memberCount": { "type": "number" }
+      },
+      "required": ["id", "name", "leaderId"]
+    },
+    "Activity": {
+      "title": "Activity",
+      "description": "A challenge or task for the participants",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "points": { "type": "number" },
+        "type": { "type": "string", "enum": ["presencial", "online"] },
+        "status": { "type": "string", "enum": ["active", "archived"] },
+        "expiryDate": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "title", "points"]
+    },
+    "Participation": {
+      "title": "Participation",
+      "description": "Record of a user completing an activity",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "groupId": { "type": "string" },
+        "activityId": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "pointsEarned": { "type": "number" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "proofUrl": { "type": "string" }
+      },
+      "required": ["userId", "groupId", "activityId", "status"]
+    },
+    "ChatMessage": {
+      "title": "Chat Message",
+      "description": "A message sent in a group chat",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "senderId": { "type": "string" },
+        "senderName": { "type": "string" },
+        "text": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "groupId": { "type": "string" }
+      },
+      "required": ["senderId", "senderName", "text", "groupId"]
+    },
+    "AppConfig": {
+      "title": "App Config",
+      "description": "Global application settings restricted to admins",
+      "type": "object",
+      "properties": {
+        "primaryColor": { "type": "string" },
+        "appName": { "type": "string" },
+        "churchName": { "type": "string" },
+        "logoType": { "type": "string" }
+      }
+    }
+  },
+  "firestore": {
+    "/config/app": {
+      "schema": "AppConfig",
+      "description": "Global app configuration"
+    },
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Users of the platform"
+    },
+    "/groups/{groupId}": {
+      "schema": "Group",
+      "description": "Teams participating in the gincana"
+    },
+    "/groups/{groupId}/messages/{messageId}": {
+      "schema": "ChatMessage",
+      "description": "Messages for a specific group"
+    },
+    "/activities/{activityId}": {
+      "schema": "Activity",
+      "description": "Challenges and scoring tasks"
+    },
+    "/participations/{participationId}": {
+      "schema": "Participation",
+      "description": "Submissions and records of activities"
+    }
+  }
+}
